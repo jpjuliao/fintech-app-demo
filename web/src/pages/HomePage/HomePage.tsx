@@ -11,8 +11,27 @@ const HomePage = () => {
 
   useEffect(() => {
     fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=IBM&interval=5min&apikey=Q5WZNTK4HUWLQ51T`)
-      .then((response) => response.json())
-      .then((actualData) => console.log(actualData));
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `This is an HTTP error: The status is ${response.status}`
+          );
+        }
+        return response.json();
+      })
+      .then((actualData) => {
+        let keys = Object.keys(actualData);
+        console.log(keys);
+        // console.log(array_slice(actualData, 1, 1, true));
+        console.log(actualData['Meta Data']);
+        setData([actualData['Meta Data']]);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   return (
@@ -29,6 +48,22 @@ const HomePage = () => {
       </p>
 
       <ArticlesCell />
+
+      <div className="App">
+        <h1>API Posts</h1>
+        {loading && <div>A moment please...</div>}
+        {error && (
+          <div>{`There is a problem fetching the post data - ${error}`}</div>
+        )}
+        <ul>
+          {data &&
+            data.map(({ '1. Information': info }) => (
+              <li>
+                <p>{info}</p>
+              </li>
+            ))}
+        </ul>
+      </div>
     </>
   )
 }
